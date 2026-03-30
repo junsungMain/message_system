@@ -1,8 +1,13 @@
 package net.prastars.messagesystem.handler;
 
-import net.prastars.messagesystem.dto.Message;
+import net.prastars.messagesystem.contants.Constants;
+import net.prastars.messagesystem.dto.domain.Message;
+import net.prastars.messagesystem.dto.websocket.inbound.BaseRequest;
+import net.prastars.messagesystem.dto.websocket.inbound.KeepAliveRequest;
+import net.prastars.messagesystem.dto.websocket.inbound.MessageRequest;
 import net.prastars.messagesystem.entity.MessageEntity;
 import net.prastars.messagesystem.repository.MessageRepository;
+import net.prastars.messagesystem.service.SessionService;
 import net.prastars.messagesystem.session.WebSocketSessionManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -20,11 +25,13 @@ public class MessageHandler extends TextWebSocketHandler {
     private static final Logger log = LoggerFactory.getLogger(MessageHandler.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebSocketSessionManager webSocketSessionManager;
+    private final SessionService sessionService;
     private final MessageRepository messageRepository;
 
-    public MessageHandler(WebSocketSessionManager webSocketSessionManager, MessageRepository messageRepository) {
+    public MessageHandler(WebSocketSessionManager webSocketSessionManager, MessageRepository messageRepository, SessionService sessionService) {
         this.webSocketSessionManager = webSocketSessionManager;
         this.messageRepository = messageRepository;
+        this.sessionService = sessionService;
     }
 
     @Override
@@ -49,17 +56,23 @@ public class MessageHandler extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession senderSession, @NonNull TextMessage message) throws Exception {
-        log.info("Received TextMessage: [{}] from {}", message, senderSession.getId());
+    protected void handleTextMessage(WebSocketSession senderSession, @NonNull TextMessage message) {
         String payload = message.getPayload();
+        log.info("Received TextMessage: [{}] from {}", payload, senderSession.getId());
         try {
-            Message receivedMessage = objectMapper.readValue(payload, Message.class);
-            messageRepository.save(new MessageEntity(receivedMessage.username(), receivedMessage.content()));
-            webSocketSessionManager.getSessions().forEach(participantSession -> {
-                if(!senderSession.getId().equals(participantSession.getId())){
-                    sendMessage(participantSession,receivedMessage);
-                }
-            });
+            BaseRequest baseRequest = objectMapper.readValue(payload, BaseRequest.class);
+
+            if(baseRequest instanceof MessageRequest messageRequest){
+                Message receivedMessage = new Message(messageRequest.getUsername(), messageRequest.getContent());
+                messageRepository.save(new MessageEntity(receivedMessage.username(), receivedMessage.content()));
+                webSocketSessionManager.getSessions().forEach(participantSession -> {
+                    if(!senderSession.getId().equals(participantSession.getId())){
+                        sendMessage(participantSession,receivedMessage);
+                    }
+                });
+            }else if (baseRequest instanceof KeepAliveRequest keepAliveRequest){
+                sessionService.refreshTTL((String) senderSession.getAttributes().get(Constants.HTTP_SESSION_ID.getValue()));
+            }
         } catch (Exception ex) {
             String errorMessage = "유효한 프로토콜이 아닙니다.";
             log.error("errorMessage payload: {} from {}", payload, senderSession.getId());
