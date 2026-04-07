@@ -2,7 +2,7 @@ package net.prastars.messagesystem.dto.websocket.inbound;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import net.prastars.messagesystem.contants.MessageType;
+import net.prastars.messagesystem.contant.MessageType;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({

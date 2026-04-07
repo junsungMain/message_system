@@ -2,7 +2,7 @@ package net.prastars.messagesystem.dto.websocket.inbound;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import net.prastars.messagesystem.contants.MessageType;
+import net.prastars.messagesystem.contant.MessageType;
 
 public class MessageRequest extends BaseRequest {
 

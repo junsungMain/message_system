@@ -1,9 +1,9 @@
 package net.prastars.messagesystem.dto.domain;
 
-public record UserId(Long id) {
+public record InviteCode(String code) {
 
-    public UserId{
-        if (id == null || id <= 0) {
+    public InviteCode{
+        if (code == null || code.isEmpty()) {
             throw new IllegalArgumentException("Invalid UserId");
         }
     }

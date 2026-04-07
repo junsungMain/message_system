@@ -1,4 +1,4 @@
-package net.prastars.messagesystem.contants;
+package net.prastars.messagesystem.contant;
 
 public class MessageType {
     public static final String MESSAGE = "MESSAGE";

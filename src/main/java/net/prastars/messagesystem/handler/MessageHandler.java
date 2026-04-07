@@ -1,6 +1,6 @@
 package net.prastars.messagesystem.handler;
 
-import net.prastars.messagesystem.contants.Constants;
+import net.prastars.messagesystem.contant.Constants;
 import net.prastars.messagesystem.dto.domain.Message;
 import net.prastars.messagesystem.dto.websocket.inbound.BaseRequest;
 import net.prastars.messagesystem.dto.websocket.inbound.KeepAliveRequest;
